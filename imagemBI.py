@@ -27,7 +27,7 @@ class ImagemBI:
 
     def capturar_painel_powerbi(self):
         options = Options()
-        options.add_argument('--headless')
+        options.add_argument('--headless=new')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--window-size=1920,1080')
@@ -41,27 +41,27 @@ class ImagemBI:
             wait = WebDriverWait(driver, 30)
 
             # Login
-            time.sleep(5)
+            time.sleep(15)
             input_email = wait.until(EC.presence_of_element_located((By.NAME, "loginfmt")))
             input_email.send_keys(self.EMAIL)
             driver.find_element(By.ID, "idSIButton9").click()
 
-            time.sleep(5)
+            time.sleep(15)
             input_senha = wait.until(EC.presence_of_element_located((By.NAME, "passwd")))
             input_senha.send_keys(self.SENHA)
             driver.find_element(By.ID, "idSIButton9").click()
 
             try:
-                time.sleep(5)
+                time.sleep(15)
                 botao_sim = wait.until(EC.element_to_be_clickable((By.ID, "idSIButton9")))
                 botao_sim.click()
             except:
                 pass
 
             # Abrir painel
-            time.sleep(10)
+            time.sleep(20)
             driver.get("https://app.fabric.microsoft.com/groups/87eb8147-a8e1-4f35-b2b1-517e534bb6c2/reports/30136b4d-75ae-44af-a192-ac42a25fb8f1/ReportSection85edb67b7778d4ac3aee?experience=fabric-developer&chromeless=true&navContentPaneEnabled=false&filterPaneEnabled=false")
-            time.sleep(15)
+            time.sleep(60)
 
             try:
                 aviso_avaliacao = wait.until(EC.element_to_be_clickable(
