@@ -3,7 +3,7 @@ name: Executar script Python agendado
 on:
   schedule:
     - cron: "0 12 * * *"  # todo dia às 12h UTC
-  workflow_dispatch: # permite rodar manualmente pelo botão
+  workflow_dispatch: # permite rodar manualmente
 
 jobs:
   run-script:
@@ -16,13 +16,27 @@ jobs:
       - name: Configurar Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: 3.10
 
-      - name: Instalar dependências
-        run: pip install -r requirements.txt
+      - name: Instalar dependências Python
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt pdf2image
+
+      - name: Instalar Poppler (necessário para pdf2image)
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Criar arquivo de credenciais do Google Drive
+        run: echo "${{ secrets.GOOGLE_DRIVE_JSON }}" > json_servico.json
+
+      - name: Definir variáveis de ambiente do Power BI
+        run: |
+          echo "POWERBI_CLIENT_ID=${{ secrets.POWERBI_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "POWERBI_TENANT_ID=${{ secrets.POWERBI_TENANT_ID }}" >> $GITHUB_ENV
+          echo "POWERBI_CLIENT_SECRET=${{ secrets.POWERBI_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "POWERBI_WORKSPACE_ID=${{ secrets.POWERBI_WORKSPACE_ID }}" >> $GITHUB_ENV
+          echo "POWERBI_REPORT_ID=${{ secrets.POWERBI_REPORT_ID }}" >> $GITHUB_ENV
 
       - name: Rodar script principal
         run: python main.py
-      
-      - name: Instalar Poppler
-        run: sudo apt-get install -y poppler-utils
+
