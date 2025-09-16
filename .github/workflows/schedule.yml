@@ -2,8 +2,8 @@ name: Executar script Python agendado
 
 on:
   schedule:
-    - cron: "0 12 * * *"  # todo dia às 12h UTC
-  workflow_dispatch: # permite rodar manualmente
+    - cron: "0 12 * * *"
+  workflow_dispatch:
 
 jobs:
   run-script:
@@ -21,9 +21,9 @@ jobs:
       - name: Instalar dependências Python
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt pdf2image
+          pip install -r requirements.txt
 
-      - name: Instalar Poppler (necessário para pdf2image)
+      - name: Instalar Poppler
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
       - name: Criar arquivo de credenciais do Google Drive
@@ -39,4 +39,3 @@ jobs:
 
       - name: Rodar script principal
         run: python main.py
-
