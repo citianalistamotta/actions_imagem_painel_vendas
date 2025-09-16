@@ -23,3 +23,6 @@ jobs:
 
       - name: Rodar script principal
         run: python main.py
+      
+      - name: Instalar Poppler
+        run: sudo apt-get install -y poppler-utils

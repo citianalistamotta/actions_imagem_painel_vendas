@@ -8,7 +8,8 @@ if __name__ == "__main__":
     relatorio_api = RelatorioAPI()
 
     print("----------------------------- Captura Painel -----------------------")
-    link_imagem = imagem.capturar_painel_powerbi()
+    links = imagem.capturar_e_enviar()
+    print("Links dos arquivos no Google Drive:", links)
 
     print("----------------------------- Envio via API -----------------------")
-    relatorio_api.enviar_relatorio_servicos(link_imagem)
+    relatorio_api.enviar_relatorio_servicos(links)

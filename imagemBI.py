@@ -1,97 +1,80 @@
 import os
-import io
-import time
+import requests
 from datetime import datetime
-from PIL import Image
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-
+from pdf2image import convert_from_path
 from google_drive_uploader import GoogleDriveUploader
 
 class ImagemBI:
     def __init__(self):
-        self.BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        # Credenciais Power BI via GitHub Secrets
+        self.CLIENT_ID = os.environ["POWERBI_CLIENT_ID"]
+        self.TENANT_ID = os.environ["POWERBI_TENANT_ID"]
+        self.CLIENT_SECRET = os.environ["POWERBI_CLIENT_SECRET"]
+        self.WORKSPACE_ID = os.environ["POWERBI_WORKSPACE_ID"]
+        self.REPORT_ID = os.environ["POWERBI_REPORT_ID"]
 
-        # Configurações Google Drive
-        self.CREDENCIAIS_JSON = os.path.join(self.BASE_DIR, "json_servico.json")
-        self.DRIVE_FOLDER_ID = "0AIKhHd2CLvXxUk9PVA" 
+        # Google Drive
+        self.CREDENCIAIS_JSON = "json_servico.json"  # caminho do seu JSON
+        self.DRIVE_FOLDER_ID = "0AIKhHd2CLvXxUk9PVA"
 
-        # Configurações Power BI
-        self.EMAIL = "mateus@motta.com.br"
-        self.SENHA = "PlanInt2025$"
+        # Pasta local
+        os.makedirs("reports", exist_ok=True)
 
-    def capturar_painel_powerbi(self):
-        options = Options()
-        options.add_argument('--headless=new')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-extensions')
+    def get_access_token(self):
+        url = f"https://login.microsoftonline.com/{self.TENANT_ID}/oauth2/v2.0/token"
+        payload = {
+            "grant_type": "client_credentials",
+            "client_id": self.CLIENT_ID,
+            "client_secret": self.CLIENT_SECRET,
+            "scope": "https://analysis.windows.net/powerbi/api/.default"
+        }
+        r = requests.post(url, data=payload)
+        r.raise_for_status()
+        return r.json()["access_token"]
 
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-        driver.get("https://login.microsoftonline.com/")
+    def export_report_pdf(self):
+        token = self.get_access_token()
+        url = f"https://api.powerbi.com/v1.0/myorg/groups/{self.WORKSPACE_ID}/reports/{self.REPORT_ID}/ExportTo"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        payload = {"format": "PDF"}
+        r = requests.post(url, headers=headers, json=payload)
+        r.raise_for_status()
 
-        try:
-            wait = WebDriverWait(driver, 30)
+        data_hoje = datetime.now().strftime("%Y-%m-%d")
+        pdf_path = os.path.join("reports", f"painel_{data_hoje}.pdf")
+        with open(pdf_path, "wb") as f:
+            f.write(r.content)
 
-            # Login
-            time.sleep(15)
-            input_email = wait.until(EC.presence_of_element_located((By.NAME, "loginfmt")))
-            input_email.send_keys(self.EMAIL)
-            driver.find_element(By.ID, "idSIButton9").click()
+        print(f"PDF salvo: {pdf_path}")
+        return pdf_path
 
-            time.sleep(15)
-            input_senha = wait.until(EC.presence_of_element_located((By.NAME, "passwd")))
-            input_senha.send_keys(self.SENHA)
-            driver.find_element(By.ID, "idSIButton9").click()
+    def pdf_to_jpeg(self, pdf_path):
+        data_hoje = datetime.now().strftime("%Y-%m-%d")
+        images = convert_from_path(pdf_path, dpi=200)
+        jpeg_paths = []
 
-            try:
-                time.sleep(15)
-                botao_sim = wait.until(EC.element_to_be_clickable((By.ID, "idSIButton9")))
-                botao_sim.click()
-            except:
-                pass
+        for i, page in enumerate(images):
+            jpeg_path = os.path.join("reports", f"painel_{data_hoje}_page{i+1}.jpeg")
+            page.save(jpeg_path, "JPEG")
+            jpeg_paths.append(jpeg_path)
+            print(f"JPEG salvo: {jpeg_path}")
 
-            # Abrir painel
-            time.sleep(20)
-            driver.get("https://app.fabric.microsoft.com/groups/87eb8147-a8e1-4f35-b2b1-517e534bb6c2/reports/30136b4d-75ae-44af-a192-ac42a25fb8f1/ReportSection85edb67b7778d4ac3aee?experience=fabric-developer&chromeless=true&navContentPaneEnabled=false&filterPaneEnabled=false")
-            time.sleep(60)
+        return jpeg_paths
 
-            try:
-                aviso_avaliacao = wait.until(EC.element_to_be_clickable(
-                    (By.XPATH, '//*[@id="content"]/tri-shell/tri-item-renderer/tri-extension-page-outlet/div[2]/report/exploration-container/div/div/docking-container/div/div/div/notification-bar/div/div[2]/button[2]')))
-                aviso_avaliacao.click()
-            except:
-                print("Aviso de avaliação gratuita não encontrado ou já fechado.")
-            time.sleep(1)
+    def upload_to_drive(self, file_paths):
+        uploader = GoogleDriveUploader(self.CREDENCIAIS_JSON, self.DRIVE_FOLDER_ID)
+        links = []
+        for path in file_paths:
+            link = uploader.upload_file(path, os.path.basename(path))
+            print(f"Arquivo enviado: {link}")
+            links.append(link)
+        return links
 
-            painel_element = wait.until(EC.presence_of_element_located(
-                (By.XPATH, '//*[@id="pvExplorationHost"]/div/div/exploration/div/explore-canvas/div/div[2]/div/div[2]/div[2]')))
-
-            png = painel_element.screenshot_as_png
-
-            # Salvar local
-            data_hoje = datetime.now().strftime("%Y-%m-%d")
-            pasta_destino = os.path.join("reports", "reportsoutput")
-            os.makedirs(pasta_destino, exist_ok=True)
-            caminho_jpeg = os.path.join(pasta_destino, f"painel_{data_hoje}.jpeg")
-            img = Image.open(io.BytesIO(png)).convert("RGB")
-            img.save(caminho_jpeg, "JPEG")
-            print(f"Imagem salva: {caminho_jpeg}")
-
-            # Upload Google Drive
-            uploader = GoogleDriveUploader(self.CREDENCIAIS_JSON, self.DRIVE_FOLDER_ID)
-            link_publico = uploader.upload_file(caminho_jpeg, f"painel_{data_hoje}.jpeg")
-            return link_publico
-
-        except Exception as e:
-            print(f"❌ Erro durante captura/upload: {e}")
-            return None
-        finally:
-            driver.quit()
+    def capturar_e_enviar(self):
+        pdf_path = self.export_report_pdf()
+        jpeg_paths = self.pdf_to_jpeg(pdf_path)
+        links = self.upload_to_drive(jpeg_paths)
+        return links
