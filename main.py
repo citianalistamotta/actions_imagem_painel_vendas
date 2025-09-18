@@ -7,6 +7,8 @@ if __name__ == "__main__":
     imagem = ImagemBI()
     relatorio_api = RelatorioAPI()
 
+    imagem.get_access_token()  # Verifica se o token está sendo obtido corretamente
+
     print("----------------------------- Captura Painel -----------------------")
     links = imagem.capturar_e_enviar()
     print("Links dos arquivos no Google Drive:", links)

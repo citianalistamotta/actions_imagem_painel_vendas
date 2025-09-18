@@ -81,3 +81,8 @@ class ImagemBI:
         jpeg_paths = self.pdf_to_jpeg(pdf_path)
         links = self.upload_to_drive(jpeg_paths)
         return links
+
+    def get_access_token(self):
+        print("CLIENT_ID:", self.CLIENT_ID)
+        print("TENANT_ID:", self.TENANT_ID)
+        print("CLIENT_SECRET:", self.CLIENT_SECRET)
