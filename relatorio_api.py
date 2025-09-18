@@ -6,7 +6,7 @@ class RelatorioAPI:
         self.token = "35B9B8575417BA1E06A63914"
         self.id_instancia = "3E7478A3D69FB1B33F60A6F61CAAA8C7"
         self.contatos = {"Samantha": "+5567992905861"}
-        self.url_base = f'https://api.z-api.io/instances/{self.id_instancia}/token/{self.token}'
+        self.url_base = f'https:/api.z-api.io/instances/{self.id_instancia}/token/{self.token}'
         self.headers = {
             "Content-Type": "application/json",
             "Client-Token": "F0e909a12f87c4194b48dbb02048b05fdS"

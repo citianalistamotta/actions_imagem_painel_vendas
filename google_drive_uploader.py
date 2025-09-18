@@ -46,7 +46,7 @@ class GoogleDriveUploader:
             supportsAllDrives=True
         ).execute()
 
-        public_url = f"https://drive.google.com/uc?id={file_id}"
+        public_url = f"https:/drive.google.com/uc?id={file_id}"
         print(f" URL pública: {public_url}")
 
         return public_url
