@@ -21,12 +21,12 @@ class ImagemBI:
         os.makedirs("reports", exist_ok=True)
 
     def get_access_token(self):
-        url = f"https:/login.microsoftonline.com/{self.TENANT_ID}/oauth2/v2.0/token"
+        url = f"https://login.microsoftonline.com/{self.TENANT_ID}/oauth2/v2.0/token"
         payload = {
             "grant_type": "client_credentials",
             "client_id": self.CLIENT_ID,
             "client_secret": self.CLIENT_SECRET,
-            "scope": "https:/analysis.windows.net/powerbi/api/.default"
+            "scope": "https://analysis.windows.net/powerbi/api/.default"
         }
         r = requests.post(url, data=payload)
         r.raise_for_status()
@@ -34,7 +34,7 @@ class ImagemBI:
 
     def export_report_pdf(self):
         token = self.get_access_token()
-        url = f"https:/api.powerbi.com/v1.0/myorg/groups/{self.WORKSPACE_ID}/reports/{self.REPORT_ID}/ExportTo"
+        url = f"https://api.powerbi.com/v1.0/myorg/groups/{self.WORKSPACE_ID}/reports/{self.REPORT_ID}/ExportTo"
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"

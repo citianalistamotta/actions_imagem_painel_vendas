@@ -29,13 +29,11 @@ jobs:
       - name: Criar arquivo de credenciais do Google Drive
         run: echo "${{ secrets.GOOGLE_DRIVE_JSON }}" > json_servico.json
 
-      - name: Definir variáveis de ambiente do Power BI
-        run: |
-          echo "POWERBI_CLIENT_ID=${{ secrets.POWERBI_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "POWERBI_TENANT_ID=${{ secrets.POWERBI_TENANT_ID }}" >> $GITHUB_ENV
-          echo "POWERBI_CLIENT_SECRET=${{ secrets.POWERBI_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "POWERBI_WORKSPACE_ID=${{ secrets.POWERBI_WORKSPACE_ID }}" >> $GITHUB_ENV
-          echo "POWERBI_REPORT_ID=${{ secrets.POWERBI_REPORT_ID }}" >> $GITHUB_ENV
-
       - name: Rodar script principal
+        env:
+          POWERBI_CLIENT_ID:     ${{ secrets.POWERBI_CLIENT_ID }}
+          POWERBI_TENANT_ID:     ${{ secrets.POWERBI_TENANT_ID }}
+          POWERBI_CLIENT_SECRET: ${{ secrets.POWERBI_CLIENT_SECRET }}
+          POWERBI_WORKSPACE_ID:  ${{ secrets.POWERBI_WORKSPACE_ID }}
+          POWERBI_REPORT_ID:     ${{ secrets.POWERBI_REPORT_ID }}
         run: python main.py
