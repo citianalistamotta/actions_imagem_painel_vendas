@@ -7,11 +7,11 @@ from google_drive_uploader import GoogleDriveUploader
 class ImagemBI:
     def __init__(self):
         # Credenciais Power BI via GitHub Secrets
-        self.CLIENT_ID = os.environ["POWERBI_CLIENT_ID"]
-        self.TENANT_ID = os.environ["POWERBI_TENANT_ID"]
-        self.CLIENT_SECRET = os.environ["POWERBI_CLIENT_SECRET"]
-        self.WORKSPACE_ID = os.environ["POWERBI_WORKSPACE_ID"]
-        self.REPORT_ID = os.environ["POWERBI_REPORT_ID"]
+        self.CLIENT_ID = os.environ["POWERBI_CLIENT_ID"].strip()
+        self.TENANT_ID = os.environ["POWERBI_TENANT_ID"].strip()
+        self.CLIENT_SECRET = os.environ["POWERBI_CLIENT_SECRET"].strip()
+        self.WORKSPACE_ID = os.environ["POWERBI_WORKSPACE_ID"].strip()
+        self.REPORT_ID = os.environ["POWERBI_REPORT_ID"].strip()
 
         # Google Drive
         self.CREDENCIAIS_JSON = "json_servico.json"  # caminho do seu JSON
